@@ -78,24 +78,24 @@ Following is a list of currently available resources and a brief description of 
         **Example request**::
 
             curl -F file=@/path/to/file http://localhost:8090/tasks/create/file
-            
+
         **Example request using Python**::
 
             import requests
             import json
-            
+
             REST_URL = "http://localhost:8090/tasks/create/file"
             SAMPLE_FILE = "/path/to/malwr.exe"
 
             with open(SAMPLE_FILE, "rb") as sample:
                 multipart_file = {"file": ("temp_file_name", sample)}
                 request = requests.post(REST_URL, files=multipart_file)
-            
+
             # Add your code to error checking for request.status_code.
-            
+
             json_decoder = json.JSONDecoder()
             task_id = json_decoder.decode(request.text)["task_id"]
-            
+
             # Add your code for error checking if task_id is None.
 
         **Example response**::
@@ -117,6 +117,7 @@ Following is a list of currently available resources and a brief description of 
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
             * ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
+            * ``callback`` *(optional)* - callback url to be called after analysis completed
 
         **Status codes**:
             * ``200`` - no error
@@ -133,25 +134,25 @@ Following is a list of currently available resources and a brief description of 
         **Example request**::
 
             curl -F url="http://www.malicious.site" http://localhost:8090/tasks/create/url
-        
+
         **Example request using Python**::
 
             import requests
             import json
-            
+
             REST_URL = "http://localhost:8090/tasks/create/url"
             SAMPLE_URL = "http://example.org/malwr.exe"
-            
+
             multipart_url = {"url": ("", SAMPLE_URL)}
             request = requests.post(REST_URL, files=multipart_url)
-            
+
             # Add your code to error checking for request.status_code.
-            
+
             json_decoder = json.JSONDecoder()
             task_id = json_decoder.decode(request.text)["task_id"]
-            
+
             # Add your code toerror checking if task_id is None.
-            
+
         **Example response**::
 
             {
@@ -171,7 +172,8 @@ Following is a list of currently available resources and a brief description of 
             * ``memory`` *(optional)* - enable the creation of a full memory dump of the analysis machine
             * ``enforce_timeout`` *(optional)* - enable to enforce the execution for the full timeout value
             * ``clock`` *(optional)* - set virtual machine clock (format %m-%d-%Y %H:%M:%S)
-
+            * ``callback`` *(optional)* - callback url to be called after analysis completed
+            
         **Status codes**:
             * ``200`` - no error
 

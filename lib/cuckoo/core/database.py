@@ -263,6 +263,7 @@ class Task(Base):
     clock = Column(DateTime(timezone=False),
                    default=datetime.now(),
                    nullable=False)
+    callback = Column(String(255), nullable=True)
     added_on = Column(DateTime(timezone=False),
                       default=datetime.now,
                       nullable=False)
@@ -830,8 +831,8 @@ class Database(object):
     @classlock
     def add(self, obj, timeout=0, package="", options="", priority=1,
             custom="", machine="", platform="", tags=None,
-            memory=False, enforce_timeout=False, clock=None,
-            shrike_url=None, shrike_msg=None, 
+            memory=False, enforce_timeout=False, clock=None, callback="",
+            shrike_url=None, shrike_msg=None,
             shrike_sid = None, shrike_refer=None, parent_id=None):
         """Add a task to database.
         @param obj: object to add (File or URL).
@@ -845,6 +846,7 @@ class Database(object):
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
         @param clock: virtual machine clock time
+        @param callback: callback url.
         @return: cursor or None.
         """
         session = self.Session()
@@ -905,6 +907,7 @@ class Database(object):
         task.platform = platform
         task.memory = memory
         task.enforce_timeout = enforce_timeout
+        task.callback = callback
         task.shrike_url = shrike_url
         task.shrike_msg = shrike_msg
         task.shrike_sid = shrike_sid
@@ -949,7 +952,7 @@ class Database(object):
 
     def add_path(self, file_path, timeout=0, package="", options="",
                  priority=1, custom="", machine="", platform="", tags=None,
-                 memory=False, enforce_timeout=False, clock=None, shrike_url=None, 
+                 memory=False, enforce_timeout=False, clock=None, callback="", shrike_url=None,
                  shrike_msg=None, shrike_sid = None, shrike_refer=None, parent_id=None):
         """Add a task to database from file path.
         @param file_path: sample path.
@@ -962,7 +965,8 @@ class Database(object):
         @param tags: Tags required in machine selection
         @param memory: toggle full memory dump.
         @param enforce_timeout: toggle full timeout execution.
-        @param clock: virtual machine clock time
+        @param clock: virtual machine clock time.
+        @param callback: url callback.
         @return: cursor or None.
         """
         if not file_path or not os.path.exists(file_path):
@@ -977,7 +981,7 @@ class Database(object):
 
         return self.add(File(file_path), timeout, package, options, priority,
                         custom, machine, platform, tags, memory,
-                        enforce_timeout, clock, shrike_url, shrike_msg, shrike_sid, shrike_refer, parent_id)
+                        enforce_timeout, clock, callback, shrike_url, shrike_msg, shrike_sid, shrike_refer, parent_id)
 
     def demux_sample_and_add_to_db(self, file_path, timeout=0, package="", options="", priority=1,
                                    custom="", machine="", platform="", tags=None,
@@ -1017,7 +1021,7 @@ class Database(object):
     @classlock
     def add_url(self, url, timeout=0, package="", options="", priority=1,
                 custom="", machine="", platform="", tags=None, memory=False,
-                enforce_timeout=False, clock=None, shrike_url=None, shrike_msg=None, 
+                enforce_timeout=False, clock=None, callback="", shrike_url=None, shrike_msg=None,
                 shrike_sid = None, shrike_refer=None, parent_id=None):
         """Add a task to database from url.
         @param url: url.
@@ -1042,7 +1046,7 @@ class Database(object):
 
         return self.add(URL(url), timeout, package, options, priority,
                         custom, machine, platform, tags, memory,
-                        enforce_timeout, clock, shrike_url, shrike_msg,
+                        enforce_timeout, clock, callback, shrike_url, shrike_msg,
                         shrike_sid, shrike_refer, parent_id)
 
     @classlock
@@ -1081,7 +1085,7 @@ class Database(object):
 
         return add(task.target, task.timeout, task.package, task.options,
                    task.priority, task.custom, task.machine, task.platform,
-                   tags, task.memory, task.enforce_timeout, task.clock)
+                   tags, task.memory, task.enforce_timeout, task.clock, task.callback)
 
     @classlock
     def list_tasks(self, limit=None, details=False, category=None,

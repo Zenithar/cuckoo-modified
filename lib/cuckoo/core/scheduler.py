@@ -8,6 +8,8 @@ import shutil
 import logging
 import threading
 import Queue
+import json
+import urllib2
 
 try:
     import re2 as re
@@ -453,11 +455,35 @@ class AnalysisManager(threading.Thread):
                 finally:
                     latest_symlink_lock.release()
 
+            if self.task.callback:
+                log.info("Callback request to url \"%s\"", self.task.callback)
+                self.callback()
+
             log.info("Task #%d: analysis procedure completed", self.task.id)
         except Exception as e:
             log.exception("Failure in AnalysisManager.run: %s" % e)
 
         active_analysis_count -= 1
+
+    def callback(self):
+        """Callback url for analysis procedure completed."""
+        header = {'Content-Type': 'application/json'}
+        response = {'task_id': self.task.id}
+
+        data = json.dumps(response, sort_keys=False, indent=4)
+
+        try:
+            request = urllib2.Request(self.task.callback, data, header)
+            urllib2.urlopen(request)
+        except urllib2.URLError as e:
+            log.warning("Unable to establish connection to callback "
+                        "url \"{0}\": {1}".format(self.task.callback, e))
+        except urllib2.HTTPError as e:
+            log.warning("Unable to perform HTTP request to callback url "
+                        "\"{0}\" (http code={1})".format(self.task.callback, e.code))
+        except Exception as e:
+            log.warning("Unable to perform HTTP request to "
+                        "callback url \"{0}\": {1}".format(self.task.callback, e))
 
 class Scheduler:
     """Tasks Scheduler.
@@ -528,7 +554,7 @@ class Scheduler:
 
         if len(machinery.machines()) > 1 and self.db.engine.name == "sqlite":
             log.warning("As you've configured Cuckoo to execute parallel "
-                        "analyses, we recommend you to switch to a MySQL " 
+                        "analyses, we recommend you to switch to a MySQL "
                         "a PostgreSQL database as SQLite might cause some "
                         "issues.")
 
